@@ -2,20 +2,20 @@ import os
 from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_mail import Mail
 from email_validator import validate_email, EmailNotValidError
 import datetime
 
 app = Flask(__name__)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('postgres://max:mSQMmFHbD7SaLWaPsQaQFRO65NL3YKAs@dpg-cpkv96nsc6pc73f5h0pg-a.frankfurt-postgres.render.com/braidhairglamour_postgresql') 
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://max:mSQMmFHbD7SaLWaPsQaQFRO65NL3YKAs@dpg-cpkv96nsc6pc73f5h0pg-a.frankfurt-postgres.render.com/braidhairglamour_postgresql'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+
 class Booking(db.Model):
-    __tablename__ = 'booking'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
@@ -23,7 +23,6 @@ class Booking(db.Model):
     time = db.Column(db.String(5), nullable=False)
 
 class Message(db.Model):
-    __tablename__ = 'message'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
@@ -128,3 +127,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+
