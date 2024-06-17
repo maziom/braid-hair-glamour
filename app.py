@@ -9,7 +9,7 @@ import datetime
 
 app = Flask(__name__)
 CORS(app)
-
+app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://max:mSQMmFHbD7SaLWaPsQaQFRO65NL3YKAs@dpg-cpkv96nsc6pc73f5h0pg-a.frankfurt-postgres.render.com/braidhairglamour_postgresql'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
