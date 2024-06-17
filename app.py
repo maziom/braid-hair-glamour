@@ -1,21 +1,33 @@
 import os
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_mail import Mail
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from email_validator import validate_email, EmailNotValidError
 import datetime
 
 app = Flask(__name__)
 CORS(app)
 
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://max:mSQMmFHbD7SaLWaPsQaQFRO65NL3YKAs@dpg-cpkv96nsc6pc73f5h0pg-a.frankfurt-postgres.render.com/braidhairglamour_postgresql'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL','postgres://max:mSQMmFHbD7SaLWaPsQaQFRO65NL3YKAs@dpg-cpkv96nsc6pc73f5h0pg-a.frankfurt-postgres.render.com/braidhairglamour_postgresql') 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 class Booking(db.Model):
+    __tablename__ = 'booking'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
@@ -23,6 +35,7 @@ class Booking(db.Model):
     time = db.Column(db.String(5), nullable=False)
 
 class Message(db.Model):
+    __tablename__ = 'message'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
@@ -32,7 +45,25 @@ def is_weekday(date_str):
     date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
     return date.weekday() < 5
 
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    user = User.query.filter_by(username=username).first()
+    if user and user.password == password:
+        login_user(user)
+        return jsonify({"message": "Zalogowano pomyślnie!"}), 200
+    return jsonify({"error": "Nieprawidłowy login lub hasło."}), 401
+
+@app.route('/api/logout')
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"message": "Wylogowano pomyślnie!"}), 200
+
 @app.route('/api/book', methods=['POST'])
+@login_required
 def book():
     data = request.get_json()
     name = data.get('name')
@@ -59,6 +90,7 @@ def book():
     return jsonify({"message": "Rezerwacja zakończona sukcesem!"}), 200
 
 @app.route('/api/bookings', methods=['GET'])
+@login_required
 def get_bookings():
     date = request.args.get('date')
     if date:
@@ -74,6 +106,7 @@ def get_bookings():
     } for booking in bookings])
 
 @app.route('/api/bookings/<int:id>', methods=['DELETE'])
+@login_required
 def delete_booking(id):
     booking = Booking.query.get(id)
     if not booking:
@@ -84,6 +117,7 @@ def delete_booking(id):
     return jsonify({"message": "Rezerwacja anulowana."}), 200
 
 @app.route('/api/bookings/<int:id>', methods=['PUT'])
+@login_required
 def update_booking(id):
     data = request.get_json()
     booking = Booking.query.get(id)
@@ -127,4 +161,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-
