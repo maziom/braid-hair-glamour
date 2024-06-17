@@ -118,63 +118,53 @@ def book():
     return jsonify({"message": "Rezerwacja zakończona sukcesem!"}), 200
 
 @app.route('/api/bookings', methods=['GET'])
-@login_required
 def get_bookings():
-    if current_user.role == 'admin':
-        date = request.args.get('date')
-        if date:
-            bookings = Booking.query.filter_by(date=date).all()
-        else:
-            bookings = Booking.query.all()
-        return jsonify([{
-            'id': booking.id,
-            'name': booking.name,
-            'email': booking.email,
-            'date': booking.date,
-            'time': booking.time
-        } for booking in bookings])
+    date = request.args.get('date')
+    if date:
+        bookings = Booking.query.filter_by(date=date).all()
     else:
-        return jsonify({"error": "Brak dostępu"}), 403
+        bookings = Booking.query.all()
+    return jsonify([{
+        'id': booking.id,
+        'name': booking.name,
+        'email': booking.email,
+        'date': booking.date,
+        'time': booking.time
+    } for booking in bookings])
 
 @app.route('/api/bookings/<int:id>', methods=['DELETE'])
 @login_required
 def delete_booking(id):
-    if current_user.role == 'admin':
-        booking = Booking.query.get(id)
-        if not booking:
-            return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
+    booking = Booking.query.get(id)
+    if not booking:
+        return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
 
-        db.session.delete(booking)
-        db.session.commit()
-        return jsonify({"message": "Rezerwacja anulowana."}), 200
-    else:
-        return jsonify({"error": "Brak dostępu"}), 403
+    db.session.delete(booking)
+    db.session.commit()
+    return jsonify({"message": "Rezerwacja anulowana."}), 200
 
 @app.route('/api/bookings/<int:id>', methods=['PUT'])
 @login_required
 def update_booking(id):
-    if current_user.role == 'admin':
-        data = request.get_json()
-        booking = Booking.query.get(id)
-        if not booking:
-            return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
+    data = request.get_json()
+    booking = Booking.query.get(id)
+    if not booking:
+        return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
 
-        new_date = data.get('date', booking.date)
-        new_time = data.get('time', booking.time)
+    new_date = data.get('date', booking.date)
+    new_time = data.get('time', booking.time)
 
-        if not is_weekday(new_date):
-            return jsonify({"error": "Rezerwacja jest możliwa tylko od poniedziałku do piątku."}), 400
+    if not is_weekday(new_date):
+        return jsonify({"error": "Rezerwacja jest możliwa tylko od poniedziałku do piątku."}), 400
 
-        existing_booking = Booking.query.filter_by(date=new_date, time=new_time).first()
-        if existing_booking and existing_booking.id != id:
-            return jsonify({"error": "Termin już zarezerwowany."}), 400
+    existing_booking = Booking.query.filter_by(date=new_date, time=new_time).first()
+    if existing_booking and existing_booking.id != id:
+        return jsonify({"error": "Termin już zarezerwowany."}), 400
 
-        booking.date = new_date
-        booking.time = new_time
-        db.session.commit()
-        return jsonify({"message": "Rezerwacja zaktualizowana."}), 200
-    else:
-        return jsonify({"error": "Brak dostępu"}), 403
+    booking.date = new_date
+    booking.time = new_time
+    db.session.commit()
+    return jsonify({"message": "Rezerwacja zaktualizowana."}), 200
 
 @app.route('/api/message', methods=['POST'])
 def send_message():
