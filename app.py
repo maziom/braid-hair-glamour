@@ -10,9 +10,7 @@ import datetime
 app = Flask(__name__)
 CORS(app)
 
-
 app.config['SECRET_KEY'] = os.urandom(24)
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://max:mSQMmFHbD7SaLWaPsQaQFRO65NL3YKAs@dpg-cpkv96nsc6pc73f5h0pg-a.frankfurt-postgres.render.com/braidhairglamour_postgresql'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -21,6 +19,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
@@ -93,7 +92,6 @@ def is_weekday(date_str):
     return date.weekday() < 5
 
 @app.route('/api/book', methods=['POST'])
-@login_required
 def book():
     data = request.get_json()
     name = data.get('name')
@@ -122,52 +120,61 @@ def book():
 @app.route('/api/bookings', methods=['GET'])
 @login_required
 def get_bookings():
-    date = request.args.get('date')
-    if date:
-        bookings = Booking.query.filter_by(date=date).all()
+    if current_user.role == 'admin':
+        date = request.args.get('date')
+        if date:
+            bookings = Booking.query.filter_by(date=date).all()
+        else:
+            bookings = Booking.query.all()
+        return jsonify([{
+            'id': booking.id,
+            'name': booking.name,
+            'email': booking.email,
+            'date': booking.date,
+            'time': booking.time
+        } for booking in bookings])
     else:
-        bookings = Booking.query.all()
-    return jsonify([{
-        'id': booking.id,
-        'name': booking.name,
-        'email': booking.email,
-        'date': booking.date,
-        'time': booking.time
-    } for booking in bookings])
+        return jsonify({"error": "Brak dostępu"}), 403
 
 @app.route('/api/bookings/<int:id>', methods=['DELETE'])
 @login_required
 def delete_booking(id):
-    booking = Booking.query.get(id)
-    if not booking:
-        return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
+    if current_user.role == 'admin':
+        booking = Booking.query.get(id)
+        if not booking:
+            return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
 
-    db.session.delete(booking)
-    db.session.commit()
-    return jsonify({"message": "Rezerwacja anulowana."}), 200
+        db.session.delete(booking)
+        db.session.commit()
+        return jsonify({"message": "Rezerwacja anulowana."}), 200
+    else:
+        return jsonify({"error": "Brak dostępu"}), 403
 
 @app.route('/api/bookings/<int:id>', methods=['PUT'])
 @login_required
 def update_booking(id):
-    data = request.get_json()
-    booking = Booking.query.get(id)
-    if not booking:
-        return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
+    if current_user.role == 'admin':
+        data = request.get_json()
+        booking = Booking.query.get(id)
+        if not booking:
+            return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
 
-    new_date = data.get('date', booking.date)
-    new_time = data.get('time', booking.time)
+        new_date = data.get('date', booking.date)
+        new_time = data.get('time', booking.time)
 
-    if not is_weekday(new_date):
-        return jsonify({"error": "Rezerwacja jest możliwa tylko od poniedziałku do piątku."}), 400
+        if not is_weekday(new_date):
+            return jsonify({"error": "Rezerwacja jest możliwa tylko od poniedziałku do piątku."}), 400
 
-    existing_booking = Booking.query.filter_by(date=new_date, time=new_time).first()
-    if existing_booking and existing_booking.id != id:
-        return jsonify({"error": "Termin już zarezerwowany."}), 400
+        existing_booking = Booking.query.filter_by(date=new_date, time=new_time).first()
+        if existing_booking and existing_booking.id != id:
+            return jsonify({"error": "Termin już zarezerwowany."}), 400
 
-    booking.date = new_date
-    booking.time = new_time
-    db.session.commit()
-    return jsonify({"message": "Rezerwacja zaktualizowana."}), 200
+        booking.date = new_date
+        booking.time = new_time
+        db.session.commit()
+        return jsonify({"message": "Rezerwacja zaktualizowana."}), 200
+    else:
+        return jsonify({"error": "Brak dostępu"}), 403
 
 @app.route('/api/message', methods=['POST'])
 def send_message():
