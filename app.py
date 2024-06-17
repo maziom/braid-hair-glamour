@@ -3,13 +3,16 @@ from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from email_validator import validate_email, EmailNotValidError
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
+from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
 app = Flask(__name__)
 CORS(app)
+
+
 app.config['SECRET_KEY'] = os.urandom(24)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://max:mSQMmFHbD7SaLWaPsQaQFRO65NL3YKAs@dpg-cpkv96nsc6pc73f5h0pg-a.frankfurt-postgres.render.com/braidhairglamour_postgresql'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -18,7 +21,6 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'users' 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
@@ -82,7 +84,7 @@ def logout():
 @app.route('/api/check_auth', methods=['GET'])
 def check_auth():
     if current_user.is_authenticated:
-        return jsonify({"user": {"email": current_user.email, "name": current_user.name, "role": current_user.role}}), 200
+        return jsonify({"user": {"email": current_user.email, "name": current_user.name}}), 200
     else:
         return jsonify({"error": "Użytkownik nie jest zalogowany"}), 401
 
@@ -120,9 +122,6 @@ def book():
 @app.route('/api/bookings', methods=['GET'])
 @login_required
 def get_bookings():
-    if current_user.role != 'admin':
-        return jsonify({"error": "Dostęp zabroniony"}), 403
-
     date = request.args.get('date')
     if date:
         bookings = Booking.query.filter_by(date=date).all()
@@ -139,9 +138,6 @@ def get_bookings():
 @app.route('/api/bookings/<int:id>', methods=['DELETE'])
 @login_required
 def delete_booking(id):
-    if current_user.role != 'admin':
-        return jsonify({"error": "Dostęp zabroniony"}), 403
-
     booking = Booking.query.get(id)
     if not booking:
         return jsonify({"error": "Rezerwacja nie znaleziona."}), 404
@@ -153,9 +149,6 @@ def delete_booking(id):
 @app.route('/api/bookings/<int:id>', methods=['PUT'])
 @login_required
 def update_booking(id):
-    if current_user.role != 'admin':
-        return jsonify({"error": "Dostęp zabroniony"}), 403
-
     data = request.get_json()
     booking = Booking.query.get(id)
     if not booking:
