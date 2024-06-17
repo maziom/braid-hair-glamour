@@ -6,6 +6,7 @@ from flask_mail import Mail
 from email_validator import validate_email, EmailNotValidError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
+from flask_migrate import Migrate
 import datetime
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -59,7 +61,7 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully"}), 201
+    return jsonify({"message": "Użytkownik zarejestrowany pomyślnie"}), 201
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -69,22 +71,22 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if not user or not check_password_hash(user.password, password):
-        return jsonify({"error": "Invalid email or password"}), 401
+        return jsonify({"error": "Nieprawidłowy email lub hasło"}), 401
 
     login_user(user)
-    return jsonify({"message": "Logged in successfully"}), 200
+    return jsonify({"message": "Zalogowano pomyślnie"}), 200
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
     logout_user()
-    return jsonify({"message": "Logged out successfully"}), 200
+    return jsonify({"message": "Wylogowano pomyślnie"}), 200
 
 @app.route('/api/check_auth', methods=['GET'])
 def check_auth():
     if current_user.is_authenticated:
         return jsonify({"user": {"email": current_user.email, "name": current_user.name}}), 200
     else:
-        return jsonify({"error": "User not authenticated"}), 401
+        return jsonify({"error": "Użytkownik nie jest zalogowany"}), 401
 
 def is_weekday(date_str):
     date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
@@ -93,7 +95,7 @@ def is_weekday(date_str):
 @app.route('/api/book', methods=['POST'])
 def book():
     if not current_user.is_authenticated:
-        return jsonify({"error": "User not authenticated"}), 401
+        return jsonify({"error": "Użytkownik nie jest zalogowany"}), 401
 
     data = request.get_json()
     name = data.get('name')
