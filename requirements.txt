@@ -8,3 +8,4 @@ email-validator==1.1.3
 Werkzeug==2.2.2
 SQLAlchemy==1.4.41
 flask_login==0.6.3
+Flask-Migrate==4.0.7
