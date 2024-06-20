@@ -1,0 +1,46 @@
+.ContactForm {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.ContactForm h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.ContactForm form {
+  display: flex;
+  flex-direction: column;
+}
+
+.ContactForm label {
+  margin-bottom: 8px;
+}
+
+.ContactForm input,
+.ContactForm textarea {
+  padding: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #333;
+  color: #fff;
+}
+
+.ContactForm button {
+  padding: 10px;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ContactForm button:hover {
+  background-color: #ccc;
+}

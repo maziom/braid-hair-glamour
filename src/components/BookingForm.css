@@ -1,0 +1,89 @@
+.BookingForm {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.BookingForm h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.BookingForm form {
+  display: flex;
+  flex-direction: column;
+}
+
+.BookingForm label {
+  margin-bottom: 8px;
+}
+
+.BookingForm input,
+.BookingForm select {
+  padding: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #333;
+  color: #fff;
+}
+
+.BookingForm button {
+  padding: 10px;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.BookingForm button:hover {
+  background-color: #ccc;
+}
+
+.BookingList {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.BookingList h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.BookingList table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.BookingList th, .BookingList td {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.BookingList th {
+  background-color: #333;
+}
+
+.BookingList button {
+  padding: 5px 10px;
+  margin: 5px;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.BookingList button:hover {
+  background-color: #ccc;
+}

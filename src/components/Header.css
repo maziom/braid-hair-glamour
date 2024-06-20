@@ -1,0 +1,64 @@
+.Header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #000;
+  color: white;
+}
+
+.logo {
+  font-size: 24px;
+  color: #ff69b4; 
+}
+
+.logo a {
+  color: #ff69b4; 
+  text-decoration: none;
+}
+
+.logo a:hover {
+  color: #ff1493; 
+}
+
+
+.hamburger {
+  font-size: 24px;
+  cursor: pointer;
+  display: none;
+}
+
+nav {
+  display: flex;
+  gap: 20px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+      display: block;
+  }
+
+  nav {
+      display: none;
+      flex-direction: column;
+      background-color: #000;
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      padding: 10px;
+      border-radius: 8px;
+  }
+
+  nav.nav-open {
+      display: flex;
+  }
+}
